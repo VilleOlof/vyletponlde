@@ -177,3 +177,5 @@ dist
 
 songs
 config.json
+art.json
+song_metadata.json

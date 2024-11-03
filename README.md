@@ -19,3 +19,12 @@ bun run index.ts
 }
 ```
 
+## TODO
+- [X] Fix clue disabled input color
+- [X] Add help screen
+- [/] Add result end screen (score calc, share, etc)
+- [X] Add metadata for all songs (lazy data input job)
+- [ ] Fix song guessing with new metadata
+- [ ] Fix show correct song with new metadata
+- [ ] mobile support
+

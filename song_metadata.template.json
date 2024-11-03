@@ -1,0 +1,21 @@
+{
+    "file_friendly_name": {
+        "cover": "base64",
+        "link": "link",
+        "artists": [
+            "a1",
+            "a2",
+            "a3"
+        ],
+        "acronyms": [
+            "a1",
+            "a2",
+            "a3"
+        ],
+        "names": [
+            "n1",
+            "n2",
+            "n3"
+        ]
+    }
+}
