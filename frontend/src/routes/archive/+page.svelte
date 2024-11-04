@@ -40,6 +40,10 @@
     $: days = days.reverse();
 </script>
 
+<svelte:head>
+    <title>archive | Vylet Ponlde</title>
+</svelte:head>
+
 <h1 class="text-4xl">Archive</h1>
 <div>
     <a href="/" class="underline text-[#5e75b0]">home</a>

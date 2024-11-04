@@ -1,16 +1,14 @@
 import { $ } from "bun";
-import { readdir } from "fs/promises";
+import { song_names } from "./songs";
 
 export let song_durations: { [key: string]: number } = {};
 
 export async function cache_all_song_durations() {
-    const files = await readdir("songs");
 
     let promises = [];
-    for (const file of files) {
-        const name = file.replace(".mp3", "");
-        promises.push(get_song_duration(file).then(duration => {
-            song_durations[name] = duration;
+    for (const song of song_names) {
+        promises.push(get_song_duration(`${song}.mp3`).then(duration => {
+            song_durations[song] = duration;
         }));
     }
 

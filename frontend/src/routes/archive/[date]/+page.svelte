@@ -13,7 +13,11 @@
     const formatted_date = format_date(new Date(data.unix));
 </script>
 
-<div>
+<svelte:head>
+    <title>{formatted_date} | Vylet Ponlde</title>
+</svelte:head>
+
+<div class="flex items-center justify-center gap-2 flex-wrap">
     <a href="/" class="underline text-[#5e75b0]">home</a>
     <span>{">"}</span>
     <a href="/archive" class="underline text-[#5e75b0]">archive</a>

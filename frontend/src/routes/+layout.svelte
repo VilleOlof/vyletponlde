@@ -10,7 +10,7 @@
 </svelte:head>
 
 <div
-	class="w-dvw h-dvh flex flex-col items-center gap-3 p-8 font-IBMPlexMono leading-[1.2em] tracking-[0.01em]"
+	class="w-dvw h-dvh flex flex-col items-center gap-2 md:gap-3 p-8 font-IBMPlexMono leading-[1.2em] tracking-[0.01em]"
 >
 	<div class="flex gap-4 items-center">
 		<a href="https://www.vyletpony.com/">
@@ -20,7 +20,9 @@
 				class="w-auto h-16"
 			/>
 		</a>
-		<h1 class="text-5xl font-bold">Vylet Ponlde</h1>
+		<h1 class="text-3xl md:text-5xl font-bold w-min md:w-fit">
+			Vylet Ponlde
+		</h1>
 	</div>
 
 	<div class="text-center flex flex-col gap-1">
@@ -38,5 +40,5 @@
 
 	<slot></slot>
 
-	<img src="/MANESIX+BAR.png" alt="" class="h-12 mt-20" />
+	<img src="/MANESIX+BAR.png" alt="" class="h-8 md:h-12 mt-10 md:mt-16" />
 </div>

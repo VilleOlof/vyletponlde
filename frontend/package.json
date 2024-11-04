@@ -22,6 +22,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"dotenv": "^16.4.5",
 		"js-levenshtein": "^1.1.6",
 		"svelte-persisted-store": "^0.12.0"
 	}

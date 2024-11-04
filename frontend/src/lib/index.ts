@@ -38,6 +38,15 @@ export type SongBuffers = {
     }
 };
 
+export type Song = {
+    cover: string,
+    link: string,
+    artists: string[],
+    acronyms: string[],
+    names: string[], // the first name is the name to be displayed
+};
+
+
 export function format_date(date: Date): string {
     return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 }

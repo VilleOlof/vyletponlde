@@ -1,4 +1,3 @@
-import { song_durations } from "./ffmpeg";
 
 // thanks random stackoverflow thread
 export function cyrb128(str: string): [number, number, number, number] {
@@ -30,25 +29,7 @@ export function sfc32(a: number, b: number, c: number, d: number): number {
     return (t >>> 0) / 4294967296;
 }
 
-/**
- * Get 3 random songs from a date.
- * Will always return the same songs for the same date.
- * 
- * @param date The date
- */
-export function get_random_songs_from_date(date: Date, num: number): string[] {
-    let seed = sfc32(...cyrb128(date.toISOString()));
-    let songs = Object.keys(song_durations);
-    let random_songs = [];
-    for (let i = 0; i < num; i++) {
-        let index = Math.floor(seed * songs.length);
-        random_songs.push(songs[index]);
-        songs.splice(index, 1);
-    }
-    return random_songs;
-}
-
-export function get_random_song_start_from_date(date: Date, song: string, duration: number, index: number): number {
-    let seed = sfc32(...cyrb128(date.toISOString() + song + index));
+export function get_random_song_start_from_unix(date: number, song: string, duration: number, index: number): number {
+    let seed = sfc32(...cyrb128(date.toString() + song + index));
     return Math.floor(seed * duration);
 }

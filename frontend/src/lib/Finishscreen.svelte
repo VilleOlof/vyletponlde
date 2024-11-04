@@ -1,10 +1,16 @@
 <script lang="ts">
-    import type { Clue, DayData, SongBuffers } from "$lib";
+    import type { Clue, DayData, Song, SongBuffers } from "$lib";
 
-    export let date: number;
     export let day: number;
     export let game: DayData;
+    export let volume: number;
     export let current_song_buffers: SongBuffers = {};
+    export let current_song_metadata: {
+        [key: number]: {
+            song: Song;
+            cover: Blob;
+        };
+    };
 
     function get_clue_color(clue: number, song: string) {
         if (game.songs[song][clue].used) return "bg-[#f03d33]/70";
@@ -41,11 +47,15 @@
     }
 
     let context = new AudioContext();
+    let gain_node = context.createGain();
+    $: gain_node.gain.value = volume / 100;
+    gain_node.connect(context.destination);
+
     let playing_node: AudioBufferSourceNode | null = null;
     function play_clue(song: string, clue: number) {
         const audio = context.createBufferSource();
         audio.buffer = current_song_buffers[song][clue];
-        audio.connect(context.destination);
+        audio.connect(gain_node);
 
         if (playing_node) playing_node.stop();
         audio.start();
@@ -86,10 +96,20 @@ ${Object.entries(game.songs)
 
 <div class="flex flex-col gap-2">
     {#each Object.entries(game.songs) as [song, data]}
+        {@const idx = Object.keys(game.songs).indexOf(song)}
+        {@const metadata = current_song_metadata[idx]}
+        {@const img_url = URL.createObjectURL(metadata.cover)}
+
         <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-[#6fa1ff]"></div>
-                <a href="/" target="_blank" class="hover:underline">{song}</a>
+                <img src={img_url} alt="cover" class="w-8 h-8 bg-[#6fa1ff]" />
+
+                <a
+                    href={metadata.song.link}
+                    target="_blank"
+                    class="hover:underline text-ellipsis max-w-52 md:max-w-80 text-nowrap overflow-hidden"
+                    >{metadata.song.names[0]}</a
+                >
             </div>
 
             <div class="flex gap-0.5">

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { PUBLIC_BACKEND_URL } from "$env/static/public";
+    import { onDestroy, onMount } from "svelte";
 
     export let song: string;
     export let clue: number;
@@ -9,9 +10,20 @@
     export let on_skip: (clue_index: number) => void;
     export let correct_clue: number;
     export let used: boolean;
+    export let typo_hint: boolean;
+    export let volume: number;
 
     let context = new AudioContext();
+    let gain_node = context.createGain();
+    $: gain_node.gain.value = volume / 100;
+    gain_node.connect(context.destination);
     let playing_node: AudioBufferSourceNode | null = null;
+
+    $: {
+        song = song;
+        // when song changes, stop playing
+        stop();
+    }
 
     let audio_bg: HTMLDivElement;
     let raf: number | null = null;
@@ -19,6 +31,16 @@
     let opacity = 0;
 
     export let guess_input: string;
+
+    function keypress_handler(e: KeyboardEvent) {
+        if (current_clue < clue) return;
+        if (e.key === clue.toString()) play();
+    }
+
+    function stop() {
+        if (playing_node) playing_node.stop();
+        if (raf) cancelAnimationFrame(raf);
+    }
 
     async function play() {
         const audio = context.createBufferSource();
@@ -30,7 +52,7 @@
             );
         }
         audio.buffer = audio_buf;
-        audio.connect(context.destination);
+        audio.connect(gain_node);
 
         if (playing_node) playing_node.stop();
         audio.start();
@@ -75,6 +97,14 @@
         if (current_clue === 4 && correct_clue < clue)
             return "disabled:bg-[#dedede]"; // gray
     }
+
+    onMount(() => {
+        window.addEventListener("keypress", keypress_handler);
+    });
+
+    onDestroy(() => {
+        window.removeEventListener("keypress", keypress_handler);
+    });
 </script>
 
 <div
@@ -101,7 +131,7 @@
             {#key used}
                 <input
                     bind:value={guess_input}
-                    class="outline-none px-2 z-10 {get_input_color()}"
+                    class="outline-none w-40 sm:w-52 px-2 z-10 {get_input_color()}"
                     type="text"
                     disabled={is_disabled}
                     placeholder={is_disabled ? "" : "guess a song"}
@@ -126,7 +156,12 @@
         >
     </div>
 
-    <p class="text-end z-10 opacity-80 pr-3">{clue_to_text[clue]}</p>
+    <div class="flex justify-between flex-row-reverse">
+        <p class="text-end z-10 opacity-80 pr-3">{clue_to_text[clue]}</p>
+        {#if typo_hint}
+            <p class="text-xs pl-3">was that a typo?</p>
+        {/if}
+    </div>
 
     <div
         class="absolute top-0 z-20 left-0 w-full h-full"
