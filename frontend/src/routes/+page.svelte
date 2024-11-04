@@ -9,4 +9,8 @@
     };
 </script>
 
+<svelte:head>
+    <title>Vylet Ponlde</title>
+</svelte:head>
+
 <Game {data} date={data.start.today} archived={false} />

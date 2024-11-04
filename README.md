@@ -64,15 +64,3 @@ a folder that contains all cover art for the songs (.webp)
 ```bash
 PUBLIC_BACKEND_URL = "https://api-vyletponlde.lifelike.dev"
 ```
-
-## TODO
-- [X] Fix clue disabled input color
-- [X] Add help screen
-- [X] Add result end screen (score calc, share, etc)
-- [X] Add metadata for all songs (lazy data input job)
-- [X] Fix song guessing with new metadata
-- [X] Fix show correct song with new metadata
-- [X] mobile support
-- [ ] add more songs
-- [X] play on different browsers and devices
-- [X] install node adapter and try to build the frontend

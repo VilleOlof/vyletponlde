@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { PUBLIC_BACKEND_URL } from "$env/static/public";
-
     export let open: boolean = true;
     export let volume: number;
 </script>
@@ -15,7 +13,7 @@
         ></button>
 
         <div
-            class="bg-white z-50 p-8 flex flex-col gap-4 w-10/12 lg:w-2/4 xl:w-1/4 pointer-events-auto"
+            class="bg-white z-50 p-8 flex flex-col gap-4 w-10/12 lg:w-2/4 2xl:w-1/4 pointer-events-auto"
         >
             <div class="w-full flex justify-between items-start">
                 <h1 class="font-bold text-5xl">how to play</h1>

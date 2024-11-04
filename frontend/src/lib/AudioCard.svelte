@@ -42,6 +42,8 @@
     function stop() {
         if (playing_node) playing_node.stop();
         if (raf) cancelAnimationFrame(raf);
+        progress = 0;
+        opacity = 0;
     }
 
     async function play() {

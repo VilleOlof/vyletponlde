@@ -181,3 +181,4 @@ art.json
 song_metadata.json
 history.sqlite
 /covers
+/song_data_input/input.json
