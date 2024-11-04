@@ -1,5 +1,5 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
-import { Song } from "$lib";
+import type { Song } from "$lib";
 import { error } from "@sveltejs/kit";
 
 export async function load() {

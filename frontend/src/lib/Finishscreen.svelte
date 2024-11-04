@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Clue, DayData, Song, SongBuffers } from "$lib";
+    import { enableHacks } from "./hack";
 
     export let day: number;
     export let game: DayData;
@@ -47,6 +48,7 @@
     }
 
     let context = new AudioContext();
+    enableHacks(context);
     let gain_node = context.createGain();
     $: gain_node.gain.value = volume / 100;
     gain_node.connect(context.destination);

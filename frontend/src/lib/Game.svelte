@@ -168,7 +168,7 @@
     }
 
     function key_press_handler(event: KeyboardEvent) {
-        if (event.key === "Enter") {
+        if (event.key === " ") {
             if ($current_clue_index === 4) next_song();
         }
     }
@@ -247,6 +247,7 @@
 
         await Promise.all(cover_promises);
 
+        if (view_state === "error") return;
         if (is_already_done()) view_state = "finished";
         else view_state = "game";
     });

@@ -52,13 +52,16 @@
 </div>
 
 <div class="flex flex-col flex-wrap gap-4 mt-4">
-    {#each days as day}
+    {#each days as day, i}
         <a
             data-sveltekit-preload-data="false"
             href={`/archive/${day.format}`}
             class="hover:underline text-[#5e75b0] bg-[#f2f2f2] p-2"
         >
-            <span>{day.format} [{is_complete(day.unix) ? "x" : " "}]</span>
+            <span
+                >#{days.length - i - 1}
+                {day.format} [{is_complete(day.unix) ? "x" : " "}]</span
+            >
         </a>
     {/each}
 </div>

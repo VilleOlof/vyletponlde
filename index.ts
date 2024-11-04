@@ -56,6 +56,12 @@ async function get_all_songs(): Promise<Song[]> {
     return Object.values(songs);
 }
 
+const CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET",
+    "Access-Control-Allow-Headers": "Content-Type"
+} as const;
+
 /**
  * # Routes
  * - `/` - What will today's adventure be?
@@ -74,6 +80,12 @@ async function get_all_songs(): Promise<Song[]> {
 Bun.serve({
     port: 7713,
     async fetch(req) {
+        if (req.method === "OPTIONS") {
+            return new Response(null, {
+                headers: { ...CORS_HEADERS }
+            });
+        }
+
         const url = new URL(req.url);
 
         let date = new Date(today.getTime());
@@ -117,7 +129,8 @@ Bun.serve({
                 let songs = await get_all_songs();
                 return new Response(JSON.stringify(songs), {
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        ...CORS_HEADERS
                     }
                 });
             }
@@ -125,7 +138,8 @@ Bun.serve({
                 let songs = day_data.songs.map(song => song.name);
                 return new Response(JSON.stringify(songs), {
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        ...CORS_HEADERS
                     }
                 });
             }
@@ -139,7 +153,8 @@ Bun.serve({
                     tz_utc_offset: new Date().getTimezoneOffset() * -1
                 }), {
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        ...CORS_HEADERS
                     }
                 });
             }
@@ -169,7 +184,8 @@ Bun.serve({
 
             return new Response(JSON.stringify(song_data), {
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    ...CORS_HEADERS
                 }
             });
         }
@@ -191,7 +207,8 @@ Bun.serve({
 
             return new Response(cover, {
                 headers: {
-                    "Content-Type": "image/webp"
+                    "Content-Type": "image/webp",
+                    ...CORS_HEADERS
                 }
             });
         }
@@ -207,7 +224,8 @@ Bun.serve({
             if (cache[song + date.getTime()]) {
                 return new Response(cache[song + date.getTime()].audio, {
                     headers: {
-                        "Content-Type": "audio/mpeg"
+                        "Content-Type": "audio/mpeg",
+                        ...CORS_HEADERS
                     }
                 });
             }
@@ -231,7 +249,8 @@ Bun.serve({
 
             return new Response(clip, {
                 headers: {
-                    "Content-Type": "audio/mpeg"
+                    "Content-Type": "audio/mpeg",
+                    ...CORS_HEADERS
                 }
             });
         }
@@ -247,7 +266,8 @@ Bun.serve({
             if (cache[song + date.getTime()]) {
                 return new Response(cache[song + date.getTime()].audio, {
                     headers: {
-                        "Content-Type": "audio/mpeg"
+                        "Content-Type": "audio/mpeg",
+                        ...CORS_HEADERS
                     }
                 });
             }
@@ -271,7 +291,8 @@ Bun.serve({
 
             return new Response(clip, {
                 headers: {
-                    "Content-Type": "audio/mpeg"
+                    "Content-Type": "audio/mpeg",
+                    ...CORS_HEADERS
                 }
             });
         }
@@ -287,7 +308,8 @@ Bun.serve({
             if (cache[song + date.getTime()]) {
                 return new Response(cache[song + date.getTime()].audio, {
                     headers: {
-                        "Content-Type": "audio/mpeg"
+                        "Content-Type": "audio/mpeg",
+                        ...CORS_HEADERS
                     }
                 });
             }
@@ -311,7 +333,8 @@ Bun.serve({
 
             return new Response(clip, {
                 headers: {
-                    "Content-Type": "audio/mpeg"
+                    "Content-Type": "audio/mpeg",
+                    ...CORS_HEADERS
                 }
             });
         }

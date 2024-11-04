@@ -74,5 +74,5 @@ PUBLIC_BACKEND_URL = "https://api-vyletponlde.lifelike.dev"
 - [X] Fix show correct song with new metadata
 - [X] mobile support
 - [ ] add more songs
-- [ ] play on different browsers and devices
-- [ ] install node adapter and try to build the frontend
+- [X] play on different browsers and devices
+- [X] install node adapter and try to build the frontend
