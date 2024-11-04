@@ -60,6 +60,9 @@ node -r dotenv/config build
 a folder that contains all cover art for the songs (.webp)  
 `{cover_name}.webp`
 
+`/songs`  
+every single song in .mp3 format
+
 `/frontend/.env`
 ```bash
 PUBLIC_BACKEND_URL = "https://api-vyletponlde.lifelike.dev"
