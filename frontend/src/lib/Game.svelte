@@ -95,12 +95,25 @@
         } else {
             // if all songs finished, show result screen here
             view_state = "finished";
+            finished_stat();
         }
     }
 
     const set_used = (song: string, clue: number) => {
         $game_state[date].songs[song][clue - 1].used = true;
     };
+
+    async function finished_stat() {
+        const res = await fetch(`${PUBLIC_BACKEND_URL}/stats/finished`);
+        if (!res.ok) console.error("Failed to increment finished stat");
+    }
+
+    async function clue_stat(song: string, clue: string | number) {
+        const res = await fetch(
+            `${PUBLIC_BACKEND_URL}/stats/clue?song=${song}&clue=${clue}`,
+        );
+        if (!res.ok) console.error("Failed to increment clue stat");
+    }
 
     let typo_hints: boolean[] = [false, false, false];
     function guess(input: string, clue_index: number) {
@@ -139,6 +152,8 @@
 
             set_used(data.random_songs[$current_song], clue_index);
         }
+
+        clue_stat(data.random_songs[$current_song], clue_index);
     }
 
     function skip(clue_index: number) {
@@ -148,6 +163,8 @@
             set_used(data.random_songs[$current_song], clue_index);
             $current_clue_index += 1;
         }
+
+        clue_stat(data.random_songs[$current_song], clue_index);
     }
 
     function round_state_to_symbol(song: string) {

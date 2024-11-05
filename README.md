@@ -67,3 +67,7 @@ every single song in .mp3 format
 ```bash
 PUBLIC_BACKEND_URL = "https://api-vyletponlde.lifelike.dev"
 ```
+
+## TODO
+- [ ] some basic server statistics
+- [ ] launch website and test it on different devices

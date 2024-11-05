@@ -2,6 +2,7 @@ import { cache_all_song_durations, get_song_bite } from "./src/ffmpeg"
 import { generate_data, get_data, type HistoryData } from "./src/history_tracker";
 import { Database } from "bun:sqlite";
 import { covers, reload, songs, type Song } from "./src/songs";
+import { clue_finished, day_finished, home_view } from "./src/stats";
 
 export const db = new Database("config/history.sqlite", { create: true });
 // unix is the unix timestamp, normalized to midnight
@@ -12,6 +13,17 @@ db.query(`
     CREATE TABLE IF NOT EXISTS history (
         unix INTEGER PRIMARY KEY,
         data TEXT NOT NULL
+    );
+`).run();
+db.query(`
+    CREATE INDEX IF NOT EXISTS history_unix_index ON history (unix);
+`).run();
+db.query(`
+    CREATE TABLE IF NOT EXISTS statistics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        unix INTEGER NOT NULL,
+        key TEXT NOT NULL,
+        value TEXT NOT NULL
     );
 `).run();
 
@@ -73,6 +85,9 @@ const CORS_HEADERS = {
  * - `/clue/1/:song` - Get a 0.5 second clip from the song
  * - `/clue/2/:song` - Get a 1 second clip from the song
  * - `/clue/3/:song` - Get a 2.5 second clip from the start of the song
+ * - `/stats/home` - Increment the home view count
+ * - `/stats/finished` - Increment the day finished count
+ * - `/stats/clue?song=:song&clue=:clue` - Increment the clue count
  * 
  * All clue routes are also based on todays date.
  * And will always return the same clip for the same song for the same day.
@@ -339,6 +354,40 @@ Bun.serve({
             });
         }
 
+        if (url.pathname === "/stats/home") {
+            home_view();
+            return new Response(null, {
+                headers: {
+                    ...CORS_HEADERS
+                }
+            });
+        }
+        else if (url.pathname === "/stats/finished") {
+            day_finished();
+            return new Response(null, {
+                headers: {
+                    ...CORS_HEADERS
+                }
+            });
+        }
+        else if (url.pathname.startsWith("/stats/clue")) {
+            let [song, clue] = [url.searchParams.get("song"), url.searchParams.get("clue")];
+            if (!song || !clue) {
+                return new Response("Not found", {
+                    status: 404
+                });
+            }
+
+            [song, clue] = [decodeURIComponent(song), decodeURIComponent(clue)];
+
+            clue_finished(song, clue);
+
+            return new Response(null, {
+                headers: {
+                    ...CORS_HEADERS
+                }
+            });
+        }
 
 
         return new Response("Not found", {

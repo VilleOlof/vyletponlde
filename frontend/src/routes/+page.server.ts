@@ -4,6 +4,11 @@ import { error } from "@sveltejs/kit";
 
 export const ssr = false;
 
+async function home_view() {
+    const res = await fetch(`${PUBLIC_BACKEND_URL}/stats/home`);
+    if (!res.ok) console.error("Failed to increment homepage view");
+}
+
 export async function load() {
     try {
         const start_res = await fetch(`${PUBLIC_BACKEND_URL}/start`);
@@ -26,6 +31,8 @@ export async function load() {
         }
 
         const all_songs: string[] = await songs.json();
+
+        home_view();
 
         return {
             start,
