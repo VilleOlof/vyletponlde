@@ -119,23 +119,10 @@
     function guess(input: string, clue_index: number) {
         if (clue_index !== $current_clue_index) return;
 
-        // typo hints
         const song_idx = data.random_songs.indexOf(
             data.random_songs[$current_song],
         );
         const song_data = current_song_metadata[song_idx].song;
-        for (const name of song_data.names) {
-            const close = check_if_close(input, name);
-            if (close) {
-                typo_hints[clue_index - 1] = true;
-
-                setTimeout(() => {
-                    typo_hints[clue_index - 1] = false;
-                }, 4000);
-
-                return; // if it looked like a typo, dont submit
-            }
-        }
 
         // check if correct
         if (check_name(input, song_data.names, song_data.acronyms)) {
@@ -147,7 +134,23 @@
 
             $current_clue_index = 4;
             set_used(data.random_songs[$current_song], 4);
+
+            return;
         } else if ($current_clue_index < 4) {
+            // typo hints
+            for (const name of song_data.names) {
+                const close = check_if_close(input, name);
+                if (close) {
+                    typo_hints[clue_index - 1] = true;
+
+                    setTimeout(() => {
+                        typo_hints[clue_index - 1] = false;
+                    }, 4000);
+
+                    return; // if it looked like a typo, dont submit
+                }
+            }
+
             $current_clue_index += 1;
 
             set_used(data.random_songs[$current_song], clue_index);
