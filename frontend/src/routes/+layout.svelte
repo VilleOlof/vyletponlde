@@ -7,6 +7,17 @@
 
 <svelte:head>
 	<title>Vylet Ponlde</title>
+
+	<meta property="og:title" content="Vylet Ponlde" />
+	<meta
+		property="og:description"
+		content="the daily vylet pony song guessing game"
+	/>
+	<meta
+		property="og:image"
+		content="https://vyletponlde.lifelike.dev/favicon.png"
+	/>
+	<meta property="og:url" content="https://vyletponlde.lifelike.dev" />
 </svelte:head>
 
 <div
