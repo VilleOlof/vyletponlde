@@ -7,7 +7,9 @@ export const ssr = false;
 export async function load({ params }) {
     const { date } = params;
 
-    let date_obj = new Date(date);
+    const [year, month, day] = date.split("-").map(Number);
+
+    let date_obj = new Date(year, month - 1, day);
     date_obj.setHours(0, 0, 0, 0);
 
     const unix = date_obj.getTime();
@@ -55,3 +57,4 @@ export async function load({ params }) {
         }
     }
 }
+

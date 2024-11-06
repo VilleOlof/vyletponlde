@@ -1,25 +1,15 @@
 <script lang="ts">
-    import { format_date, type GameData, type Start } from "$lib";
+    import { type GameData, type Start } from "$lib";
     import { persisted } from "svelte-persisted-store";
     import type { Writable } from "svelte/store";
 
     export let data: {
         start: Start;
+        days: {
+            format: string;
+            unix: number;
+        }[];
     };
-
-    // put all days between start.start and start.today into an array
-    let days: {
-        format: string;
-        unix: number;
-    }[] = [];
-    for (let i = data.start.start; i <= data.start.today; i += 86400000) {
-        const date = new Date(i);
-        date.setHours(0, 0, 0, 0);
-        days.push({
-            format: format_date(date),
-            unix: date.getTime(),
-        });
-    }
 
     let game_state: Writable<GameData> = persisted("vp-game_state", {});
     function is_complete(unix: number): boolean {
@@ -36,8 +26,6 @@
 
         return true;
     }
-
-    $: days = days.reverse();
 </script>
 
 <svelte:head>
@@ -52,14 +40,14 @@
 </div>
 
 <div class="flex flex-col flex-wrap gap-4 mt-4">
-    {#each days as day, i}
+    {#each data.days as day, i}
         <a
             data-sveltekit-preload-data="false"
             href={`/archive/${day.format}`}
             class="hover:underline text-[#5e75b0] bg-[#f2f2f2] p-2"
         >
             <span
-                >#{days.length - i - 1}
+                >#{data.days.length - i - 1}
                 {day.format} [{is_complete(day.unix) ? "x" : " "}]</span
             >
         </a>

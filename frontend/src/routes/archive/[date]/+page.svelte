@@ -1,7 +1,6 @@
 <script lang="ts">
     import { format_date, type Start } from "$lib";
     import Game from "$lib/Game.svelte";
-    import { writable } from "svelte/store";
 
     export let data: {
         start: Start;
