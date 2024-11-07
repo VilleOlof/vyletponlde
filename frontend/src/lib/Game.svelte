@@ -104,13 +104,19 @@
     };
 
     async function finished_stat() {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/stats/finished`);
+        const res = await fetch(
+            `${PUBLIC_BACKEND_URL}/stats/finished?date=${date}`,
+        );
         if (!res.ok) console.error("Failed to increment finished stat");
     }
 
-    async function clue_stat(song: string, clue: string | number) {
+    async function clue_stat(
+        song: string,
+        clue: string | number,
+        correct = false,
+    ) {
         const res = await fetch(
-            `${PUBLIC_BACKEND_URL}/stats/clue?song=${song}&clue=${clue}`,
+            `${PUBLIC_BACKEND_URL}/stats/clue?date=${date}&song=${song}&clue=${clue}${correct ? "&correct=true" : ""}`,
         );
         if (!res.ok) console.error("Failed to increment clue stat");
     }
@@ -134,6 +140,8 @@
 
             $current_clue_index = 4;
             set_used(data.random_songs[$current_song], 4);
+
+            clue_stat(data.random_songs[$current_song], clue_index, true);
 
             return;
         } else if ($current_clue_index < 4) {

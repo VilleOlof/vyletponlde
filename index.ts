@@ -94,7 +94,7 @@ export const CORS_HEADERS = {
  * - `/clue/3/:song` - Get a 2.5 second clip from the start of the song
  * - `/stats/home` - Increment the home view count
  * - `/stats/finished` - Increment the day finished count
- * - `/stats/clue?song=:song&clue=:clue` - Increment the clue count
+ * - `/stats/clue?song=:song&clue=:clue&correct=boolean` - Increment the clue count
  * - `/dashboard/total?key=:key` - Get the total home views and days finished
  * - `/dashboard/within?key=:key&start=:start&end=:end` - Get the home views and days finished within a date range
  * - `/dashboard/clue?key=:key&song=:song&clue=:clue&start=:start&end=:end` - Get the count for a specific clue within a date range
@@ -191,10 +191,10 @@ Bun.serve({
         const clue_res = await clue_routes(url, date, day_data);
         if (clue_res !== undefined) return clue_res;
 
-        const stat_res = await stat_routes(url);
+        const stat_res = await stat_routes(url, date);
         if (stat_res !== undefined) return stat_res;
 
-        const dashboard_res = await dashboard_routes(url);
+        const dashboard_res = await dashboard_routes(url, date);
         if (dashboard_res !== undefined) return dashboard_res;
 
         return new Response("Not found", {

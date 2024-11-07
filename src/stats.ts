@@ -21,12 +21,12 @@ export function home_view() {
 /**
  * Increment the day finished count by 1
  */
-export function day_finished() {
+export function day_finished(unix: number) {
     // increment day_finished
     db.query(`
         INSERT INTO statistics (unix, key, value)
         VALUES (?, ?, '1')
-        `).run(Date.now(), StatKey.day_finished);
+        `).run(unix, StatKey.day_finished);
 }
 
 /**
@@ -35,11 +35,24 @@ export function day_finished() {
  * @param song The song name
  * @param clue The clue number
  */
-export function clue_finished(song: string, clue: string) {
+export function clue_finished(unix: number, song: string, clue: string) {
     db.query(`
         INSERT INTO statistics (unix, key, value)
         VALUES (?, ?, '1')
-        `).run(Date.now(), `song_${song}_clue_${clue}`);
+        `).run(unix, `song_${song}_clue_${clue}`);
+}
+
+/**
+ * Increment the correct clue count by 1
+ * 
+ * @param song The song name
+ * @param clue The clue number
+ */
+export function clue_correct(unix: number, song: string, clue: string) {
+    db.query(`
+        INSERT INTO statistics (unix, key, value)
+        VALUES (?, ?, '1')
+        `).run(unix, `song_${song}_clue_${clue}_correct`);
 }
 
 /**
@@ -60,15 +73,15 @@ export function get_total_stat(key: StatKey): number {
  * Get the total count of a statistic within a date range
  * 
  * @param key The statistic key
- * @param param1 The start and end date
+ * @param unix The unix timestamp
  * @returns The total count
  */
-export function get_stat_within_date(key: StatKey, [start, end]: [number, number]): number {
+export function get_stat_within_date(key: StatKey, unix: number): number {
     return (db.query(`
         SELECT SUM(value) as total
         FROM statistics
-        WHERE key = ? AND unix >= ? AND unix <= ?
-        `).get(key, start, end) as { total: number }).total || 0;
+        WHERE key = ? AND unix = ?
+        `).get(key, unix) as { total: number }).total || 0;
 }
 
 /**
@@ -76,15 +89,31 @@ export function get_stat_within_date(key: StatKey, [start, end]: [number, number
  * 
  * @param song The song name
  * @param clue The clue number
- * @param param2 The start and end date
+ * @param unix The unix timestamp
  * @returns The total count
  */
-export function get_clue_stat(song: string, clue: string, [start, end]: [number, number]): number {
+export function get_clue_stat(song: string, clue: string, unix: number): number {
     return (db.query(`
         SELECT SUM(value) as total
         FROM statistics
-        WHERE key = ? AND unix >= ? AND unix <= ?
-        `).get(`song_${song}_clue_${clue}`, start, end) as { total: number }).total || 0;
+        WHERE key = ? AND unix = ?
+        `).get(`song_${song}_clue_${clue}`, unix) as { total: number }).total || 0;
+}
+
+/**
+ * Get the count of a correct clue within a date range
+ * 
+ * @param song The song name
+ * @param clue The clue number
+ * @param unix The unix timestamp
+ * @returns The total count
+ */
+export function get_correct_clue_stat(song: string, clue: string, unix: number): number {
+    return (db.query(`
+        SELECT SUM(value) as total
+        FROM statistics
+        WHERE key = ? AND unix = ?
+        `).get(`song_${song}_clue_${clue}_correct`, unix) as { total: number }).total || 0;
 }
 
 /**
@@ -93,7 +122,9 @@ export function get_clue_stat(song: string, clue: string, [start, end]: [number,
  * @param url The URL passed down by the router
  * @returns The response if the route was found
  */
-export async function stat_routes(url: URL): Promise<Response | undefined> {
+export async function stat_routes(url: URL, date: Date): Promise<Response | undefined> {
+    const unix = date.getTime();
+
     if (url.pathname === "/stats/home") {
         home_view();
         return new Response(null, {
@@ -103,7 +134,7 @@ export async function stat_routes(url: URL): Promise<Response | undefined> {
         });
     }
     else if (url.pathname === "/stats/finished") {
-        day_finished();
+        day_finished(unix);
         return new Response(null, {
             headers: {
                 ...CORS_HEADERS
@@ -120,7 +151,11 @@ export async function stat_routes(url: URL): Promise<Response | undefined> {
 
         [song, clue] = [decodeURIComponent(song), decodeURIComponent(clue)];
 
-        clue_finished(song, clue);
+        if (url.searchParams.has("correct")) {
+            clue_correct(unix, song, clue);
+        }
+
+        clue_finished(unix, song, clue);
 
         return new Response(null, {
             headers: {

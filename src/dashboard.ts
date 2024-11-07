@@ -1,5 +1,5 @@
 import { CORS_HEADERS, config } from "../index";
-import { get_total_stat, StatKey, get_stat_within_date, get_clue_stat } from "./stats";
+import { get_total_stat, StatKey, get_stat_within_date, get_clue_stat, get_correct_clue_stat } from "./stats";
 
 /**
  * Routes for dashboard statistics
@@ -7,7 +7,7 @@ import { get_total_stat, StatKey, get_stat_within_date, get_clue_stat } from "./
  * @param url The URL passed down by the router
  * @returns The response if the route was found
  */
-export async function dashboard_routes(url: URL): Promise<Response | undefined> {
+export async function dashboard_routes(url: URL, date: Date): Promise<Response | undefined> {
     if (url.pathname.startsWith("/dashboard")) {
         if (config.private_key !== decodeURIComponent(url.searchParams.get("key") || "")) {
             return new Response("Unauthorized", {
@@ -39,17 +39,11 @@ export async function dashboard_routes(url: URL): Promise<Response | undefined> 
             });
         }
 
-        let [start_str, end_str] = [url.searchParams.get("start"), url.searchParams.get("end")];
-        if (!start_str || !end_str) {
-            return new Response("Bad request", {
-                status: 400
-            });
-        }
-        const [start, end] = [parseInt(start_str), parseInt(end_str)];
+        const unix = date.getTime();
 
         if (url.pathname === "/dashboard/within") {
-            const home_views = get_stat_within_date(StatKey.homepage_view, [start, end]);
-            const day_finished = get_stat_within_date(StatKey.day_finished, [start, end]);
+            const home_views = get_stat_within_date(StatKey.homepage_view, unix);
+            const day_finished = get_stat_within_date(StatKey.day_finished, unix);
 
             return new Response(JSON.stringify({
                 home_views,
@@ -70,7 +64,13 @@ export async function dashboard_routes(url: URL): Promise<Response | undefined> 
             }
             const [song, clue] = [decodeURIComponent(song_raw), decodeURIComponent(clue_raw)];
 
-            const song_clue = get_clue_stat(song, clue, [start, end]);
+            let song_clue: number;
+            if (url.searchParams.has("correct")) {
+                song_clue = get_correct_clue_stat(song, clue, unix);
+            }
+            else {
+                song_clue = get_clue_stat(song, clue, unix);
+            }
 
             return new Response(JSON.stringify({
                 song,

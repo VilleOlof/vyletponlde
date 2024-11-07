@@ -26,17 +26,34 @@
         return await res.json();
     }
 
-    async function get_data_for_day(unix: number): Promise<DayData> {
-        const songs = await get_songs_for_day(unix);
-        // 1 day = 86400 seconds
-        const end_unix = unix + 86400000;
+    async function get(unix: number): Promise<{
+        data: DayData;
+        correct: {
+            [song: string]: {
+                [clue: string]: number;
+            };
+        };
+    }> {
+        const data = await get_data_for_day(unix, false);
+        const correct = await get_data_for_day(unix, true);
 
+        return {
+            data,
+            correct: correct.clues,
+        };
+    }
+
+    async function get_data_for_day(
+        unix: number,
+        correct: boolean,
+    ): Promise<DayData> {
+        const songs = await get_songs_for_day(unix);
         let promises = [];
         for (let song of songs) {
             for (let i = 1; i <= 3; i++) {
                 promises.push(async () => {
                     const res = await fetch(
-                        `${PUBLIC_BACKEND_URL}/dashboard/clue?key=${data.key}&song=${song}&clue=${i}&start=${unix}&end=${end_unix}`,
+                        `${PUBLIC_BACKEND_URL}/dashboard/clue?key=${data.key}&song=${song}&clue=${i}&date=${unix}${correct ? "&correct=true" : ""}`,
                     );
                     if (!res.ok) {
                         throw new Error("failed to fetch clue");
@@ -62,7 +79,7 @@
         }
 
         const res = await fetch(
-            `${PUBLIC_BACKEND_URL}/dashboard/within?key=${data.key}&start=${unix}&end=${end_unix}`,
+            `${PUBLIC_BACKEND_URL}/dashboard/within?key=${data.key}&date=${unix}`,
         );
         if (!res.ok) {
             throw new Error("failed to fetch home views");
@@ -107,16 +124,16 @@
     {/each}
 </select>
 
-{#await get_data_for_day(selected_day)}
+{#await get(selected_day)}
     <p>loading...</p>
 {:then data}
     <div class="flex flex-col">
-        <li>{data.home_views} homepage views</li>
-        <li>{data.day_finished} games completed</li>
+        <li>{data.data.home_views} homepage views</li>
+        <li>{data.data.day_finished} games completed</li>
     </div>
 
     <div class="flex flex-col gap-2 mt-4">
-        {#each Object.keys(data.clues) as song}
+        {#each Object.keys(data.data.clues) as song}
             <div
                 class="flex flex-col gap-2 bg-[#f2f2f2] px-4 py-1 items-center"
             >
@@ -125,11 +142,19 @@
                 >
                     {song}
                 </p>
-                <div class="flex gap-2 justify-center">
-                    <p>clues used:</p>
-                    {#each Object.keys(data.clues[song]) as clue}
-                        <p>{data.clues[song][clue]}</p>
-                    {/each}
+                <div class="flex gap-4">
+                    <div class="flex gap-2 justify-center">
+                        <p>used:</p>
+                        {#each Object.keys(data.data.clues[song]) as clue}
+                            <p>{data.data.clues[song][clue]}</p>
+                        {/each}
+                    </div>
+                    <div class="flex gap-2 justify-center">
+                        <p>correct:</p>
+                        {#each Object.keys(data.data.clues[song]) as clue}
+                            <p>{data.correct[song][clue]}</p>
+                        {/each}
+                    </div>
                 </div>
             </div>
         {/each}
