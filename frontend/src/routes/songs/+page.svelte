@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Song } from "$lib";
+    import Breadcrumbs from "$lib/Breadcrumbs.svelte";
 
     export let data: {
         songs: Song[];
@@ -10,11 +11,12 @@
     <title>songs | Vylet Ponlde</title>
 </svelte:head>
 
-<div class="flex items-center justify-center gap-2 flex-wrap">
-    <a href="/" class="underline text-[#5e75b0]">home</a>
-    <span>{">"}</span>
-    <a href="/songs" class="underline text-[#5e75b0]">songs</a>
-</div>
+<Breadcrumbs
+    routes={[
+        [`/`, `home`],
+        [`/songs`, `songs`],
+    ]}
+/>
 
 <p>{data.songs.length} total songs</p>
 

@@ -50,3 +50,24 @@ export type Song = {
 export function format_date(date: Date): string {
     return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 }
+
+export function get_days(start: Start): {
+    format: string;
+    unix: number;
+}[] {
+    let days = [];
+
+    for (let i = start.start; i <= start.today; i += 86400000) {
+        const date = new Date(i);
+        date.setHours(0, 0, 0, 0);
+
+        days.push({
+            format: format_date(date),
+            unix: date.getTime(),
+        });
+    }
+
+    days.reverse();
+
+    return days;
+}

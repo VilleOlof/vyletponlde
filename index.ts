@@ -2,7 +2,7 @@ import { cache_all_song_durations, get_song_bite } from "./src/ffmpeg"
 import { generate_data, get_data, type HistoryData } from "./src/history_tracker";
 import { Database } from "bun:sqlite";
 import { covers, reload, songs, type Song } from "./src/songs";
-import { clue_finished, day_finished, home_view } from "./src/stats";
+import { clue_finished, day_finished, get_clue_stat, get_stat_within_date, get_total_stat, home_view, StatKey } from "./src/stats";
 
 export const db = new Database("config/history.sqlite", { create: true });
 // unix is the unix timestamp, normalized to midnight
@@ -29,6 +29,7 @@ db.query(`
 
 const config: {
     starting_date: string
+    private_key: string
 } = await Bun.file("config/config.json").json();
 await reload(); // reload songs, covers etc
 
@@ -88,6 +89,9 @@ const CORS_HEADERS = {
  * - `/stats/home` - Increment the home view count
  * - `/stats/finished` - Increment the day finished count
  * - `/stats/clue?song=:song&clue=:clue` - Increment the clue count
+ * - `/dashboard/total?key=:key` - Get the total home views and days finished
+ * - `/dashboard/within?key=:key&start=:start&end=:end` - Get the home views and days finished within a date range
+ * - `/dashboard/clue?key=:key&song=:song&clue=:clue&start=:start&end=:end` - Get the count for a specific clue within a date range
  * 
  * All clue routes are also based on todays date.
  * And will always return the same clip for the same song for the same day.
@@ -389,6 +393,82 @@ Bun.serve({
             });
         }
 
+        if (url.pathname.startsWith("/dashboard")) {
+            if (config.private_key !== decodeURIComponent(url.searchParams.get("key") || "")) {
+                return new Response("Unauthorized", {
+                    status: 401
+                });
+            }
+
+            if (url.pathname === "/dashboard") {
+                return new Response(null, {
+                    status: 200,
+                    headers: {
+                        ...CORS_HEADERS
+                    }
+                });
+            }
+
+            if (url.pathname === "/dashboard/total") {
+                const total_home_views = get_total_stat(StatKey.homepage_view);
+                const total_days_finished = get_total_stat(StatKey.day_finished);
+
+                return new Response(JSON.stringify({
+                    total_home_views,
+                    total_days_finished
+                }), {
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...CORS_HEADERS
+                    }
+                });
+            }
+
+            let [start_str, end_str] = [url.searchParams.get("start"), url.searchParams.get("end")];
+            if (!start_str || !end_str) {
+                return new Response("Bad request", {
+                    status: 400
+                });
+            }
+            const [start, end] = [parseInt(start_str), parseInt(end_str)];
+
+            if (url.pathname === "/dashboard/within") {
+                const home_views = get_stat_within_date(StatKey.homepage_view, [start, end]);
+                const day_finished = get_stat_within_date(StatKey.day_finished, [start, end]);
+
+                return new Response(JSON.stringify({
+                    home_views,
+                    day_finished
+                }), {
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...CORS_HEADERS
+                    }
+                });
+            }
+            else if (url.pathname === "/dashboard/clue") {
+                const [song_raw, clue_raw] = [url.searchParams.get("song"), url.searchParams.get("clue")];
+                if (!song_raw || !clue_raw) {
+                    return new Response("Bad request", {
+                        status: 400
+                    });
+                }
+                const [song, clue] = [decodeURIComponent(song_raw), decodeURIComponent(clue_raw)];
+
+                const song_clue = get_clue_stat(song, clue, [start, end]);
+
+                return new Response(JSON.stringify({
+                    song,
+                    clue,
+                    count: song_clue
+                }), {
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...CORS_HEADERS
+                    }
+                });
+            }
+        }
 
         return new Response("Not found", {
             status: 404

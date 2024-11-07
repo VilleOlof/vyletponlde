@@ -1,5 +1,6 @@
 <script lang="ts">
     import { type GameData, type Start } from "$lib";
+    import Breadcrumbs from "$lib/Breadcrumbs.svelte";
     import { persisted } from "svelte-persisted-store";
     import type { Writable } from "svelte/store";
 
@@ -32,12 +33,12 @@
     <title>archive | Vylet Ponlde</title>
 </svelte:head>
 
-<h1 class="text-4xl">Archive</h1>
-<div>
-    <a href="/" class="underline text-[#5e75b0]">home</a>
-    <span>{">"}</span>
-    <a href="/archive" class="underline text-[#5e75b0]">archive</a>
-</div>
+<Breadcrumbs
+    routes={[
+        [`/`, `home`],
+        [`/archive`, `archive`],
+    ]}
+/>
 
 <div class="flex flex-col flex-wrap gap-4 mt-4">
     {#each data.days as day, i}

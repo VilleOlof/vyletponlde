@@ -1,5 +1,6 @@
 <script lang="ts">
     import { format_date, type Start } from "$lib";
+    import Breadcrumbs from "$lib/Breadcrumbs.svelte";
     import Game from "$lib/Game.svelte";
 
     export let data: {
@@ -16,14 +17,12 @@
     <title>{formatted_date} | Vylet Ponlde</title>
 </svelte:head>
 
-<div class="flex items-center justify-center gap-2 flex-wrap">
-    <a href="/" class="underline text-[#5e75b0]">home</a>
-    <span>{">"}</span>
-    <a href="/archive" class="underline text-[#5e75b0]">archive</a>
-    <span>{">"}</span>
-    <a href="/archive/{formatted_date}" class="underline text-[#5e75b0]"
-        >{formatted_date}</a
-    >
-</div>
+<Breadcrumbs
+    routes={[
+        ["/", "home"],
+        ["/archive", "archive"],
+        [`/archive/${formatted_date}`, formatted_date],
+    ]}
+/>
 
 <Game {data} date={data.unix} archived={true} />

@@ -26,7 +26,8 @@ node -r dotenv/config build
 `config/config.json`
 ```json
 {
-    "starting_date": "2024-11-01"
+    "starting_date": "2024-11-01",
+    "private_key": "**********",
 }
 ```
 
@@ -69,5 +70,6 @@ PUBLIC_BACKEND_URL = "https://api-vyletponlde.lifelike.dev"
 ```
 
 ## TODO
-- [ ] some basic server statistics
-- [ ] launch website and test it on different devices
+- [X] view stats
+- [ ] docs, clean up
+- [ ] open source

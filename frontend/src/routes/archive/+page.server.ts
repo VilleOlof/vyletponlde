@@ -1,5 +1,5 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
-import { format_date, type Start } from "$lib";
+import { format_date, get_days, type Start } from "$lib";
 import { error } from "@sveltejs/kit";
 
 export const ssr = false;
@@ -28,25 +28,4 @@ export async function load() {
             return error(500, "An unknown error occurred");
         }
     }
-}
-
-function get_days(start: Start): {
-    format: string;
-    unix: number;
-}[] {
-    let days = [];
-
-    for (let i = start.start; i <= start.today; i += 86400000) {
-        const date = new Date(i);
-        date.setHours(0, 0, 0, 0);
-
-        days.push({
-            format: format_date(date),
-            unix: date.getTime(),
-        });
-    }
-
-    days.reverse();
-
-    return days;
 }
