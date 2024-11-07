@@ -11,6 +11,12 @@ export type HistoryData = {
     }[]
 };
 
+/**
+ * Add a history entry
+ * 
+ * @param id unix timestamp
+ * @param data The data for that day (stringified JSON)
+ */
 export function add_history(id: number, data: string): void {
     db.query(`
         INSERT INTO history (unix, data)
@@ -18,6 +24,12 @@ export function add_history(id: number, data: string): void {
     `).run(id, data);
 }
 
+/**
+ * Get the data for a specific day
+ * 
+ * @param unix The unix timestamp
+ * @returns The data for that day
+ */
 export function get_data(unix: number): HistoryData | undefined {
     let data = (db.query(`
         SELECT *
@@ -32,6 +44,13 @@ export function get_data(unix: number): HistoryData | undefined {
     return JSON.parse(data);
 }
 
+/**
+ * Generate the data for a specific day  
+ * Also saves the data to the database
+ * 
+ * @param unix The unix timestamp
+ * @returns The data for that day
+ */
 export function generate_data(unix: number): HistoryData {
     let seed = sfc32(...cyrb128(unix.toString()));
     let songs = Object.keys(song_durations);

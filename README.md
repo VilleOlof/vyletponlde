@@ -2,74 +2,104 @@
 
 > https://vyletponlde.lifelike.dev
 
-```bash
+Vylet Ponlde is a song guessing game for the artist **[Vylet Pony](https://www.vyletpony.com/)**  
+Every day you get 5 new random songs, and 3 clues to guess the song.  
+And you get a combined score at the end on how well you did.
 
-# Backend API
+All the songs, metadata and covers is data-driven,  
+so technically this could be easily changed for another artist.  
+*(Provided the entire website design is changed)*
+
+
+## Installation & Usage
+
+### Server
+
+The server is written in Typescript, using [Bun](https://bun.sh).  
+
+```bash
+# Server API
 # Install dependencies
 bun install
 # Run the server
 bun run index.ts
-
 # Starts the server on port 7713
-
-# Frontend
-cd frontend
-# Install dependencies
-npm install
-# Build the frontend
-npm run build
-# Start the frontend
-node -r dotenv/config build
 ```
-*Needs **ffmpeg** & **ffprobe** installed and in the users path*
 
-`config/config.json`
+> [!IMPORTANT]  
+> *Needs **ffmpeg** & **ffprobe** installed and in the users path*
+
+### Server Configuration
+
+**`config/config.json`**
 ```json
 {
-    "starting_date": "2024-11-01",
-    "private_key": "**********",
+    "starting_date": "2024-11-01", // The date the game starts counting from
+    "private_key": "**********", // Private key for the dashboard login
 }
 ```
 
-`config/song_metadata.json`
+**`config/song_metadata.json`**
 ```json
 {
-    "file_friendly_name": {
-        "cover": "cover_name",
-        "link": "link",
+    "song_file_name_without_ext": {
+        "cover": "cover_name_without_ext",
+        "link": "<url>",
         "artists": [
-            "a1",
-            "a2",
-            "a3"
+            "artist_name"
         ],
-        "acronyms": [
-            "a1",
-            "a2",
-            "a3"
-        ],
-        "names": [
-            "n1",
-            "n2",
-            "n3"
-        ]
+        "acronyms": [],
+        "names": []
     }
 }
 ```
-*do note that the database will create itself under `config/history.sqlite`*  
 
-`/covers`  
+**`/covers`**  
 a folder that contains all cover art for the songs (.webp)  
 `{cover_name}.webp`
 
-`/songs`  
-every single song in .mp3 format
+**`/songs`**  
+every single song in .mp3 format  
+`{song_name}.mp3`
 
-`/frontend/.env`
+*do note that a sqlite database will create itself under **`config/history.sqlite`***  
+
+### Data explanation
+
+Gonna try to shortly explain how the data is structured.  
+
+When the server picks 5 random songs, it will look at the `song_metadata.json` file.  
+Pick 5 random keys from the object, and then use that key to find a song with the same name in the `songs` folder.  
+(`songs/{key}.mp3`)  
+
+The `cover` field from the metadata is used to find the cover art in the `covers` folder.  
+(`covers/{cover}.webp`)
+
+Thus its important that the key of every metadata object is the same as the song file name.  
+And the cover field is the same as the cover file name. (without any extension).  
+
+### Frontend
+
 ```bash
-PUBLIC_BACKEND_URL = "https://api-vyletponlde.lifelike.dev"
+# Frontend
+cd frontend
+## Install dependencies
+npm install
+
+# Development
+## Start the frontend
+npm run dev
+
+# Production
+## Build the frontend
+npm run build
+## Start the frontend
+node -r dotenv/config build
 ```
 
-## TODO
-- [X] view stats
-- [ ] docs, clean up
-- [ ] open source
+### Frontend Configuration
+
+**`/frontend/.env`**
+```bash
+PUBLIC_BACKEND_URL = "http://localhost:7713"
+```

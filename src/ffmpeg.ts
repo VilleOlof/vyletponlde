@@ -3,6 +3,9 @@ import { song_names } from "./songs";
 
 export let song_durations: { [key: string]: number } = {};
 
+/**
+ * Cache all song durations globally.
+ */
 export async function cache_all_song_durations() {
 
     let promises = [];

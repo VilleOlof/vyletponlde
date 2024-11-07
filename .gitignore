@@ -175,10 +175,14 @@ dist
 .DS_Store
 
 
-/songs
+/songs/*
+!/songs/.gitkeep
+
+/covers/*
+!/covers/.gitkeep
+
 config.json
 art.json
 song_metadata.json
 history.sqlite
-/covers
 /song_data_input/input.json

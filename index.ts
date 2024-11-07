@@ -1,10 +1,14 @@
-import { cache_all_song_durations, get_song_bite } from "./src/ffmpeg"
+import { cache_all_song_durations } from "./src/ffmpeg"
 import { generate_data, get_data, type HistoryData } from "./src/history_tracker";
 import { Database } from "bun:sqlite";
-import { covers, reload, songs, type Song } from "./src/songs";
-import { clue_finished, day_finished, get_clue_stat, get_stat_within_date, get_total_stat, home_view, StatKey } from "./src/stats";
+import { metadata_routes, reload, songs, type Song } from "./src/songs";
+import { stat_routes } from "./src/stats";
+import { dashboard_routes } from "./src/dashboard";
+import { clue_routes } from "./src/clues";
 
+/// Database for statistics and history tracking
 export const db = new Database("config/history.sqlite", { create: true });
+
 // unix is the unix timestamp, normalized to midnight
 // and data is the data for that day
 // even tho we could generate this data, if we add more songs those would be different
@@ -27,7 +31,7 @@ db.query(`
     );
 `).run();
 
-const config: {
+export const config: {
     starting_date: string
     private_key: string
 } = await Bun.file("config/config.json").json();
@@ -36,6 +40,8 @@ await reload(); // reload songs, covers etc
 let today = new Date();
 today.setHours(0, 0, 0, 0);
 
+/// Check if the day has changed and recache song durations
+/// We also reload the song metadata in case it has changed
 setInterval(async () => {
     let now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -55,7 +61,7 @@ setInterval(async () => {
     }
 }, 1000 * 60); // every minute
 
-let cache: {
+export let cache: {
     // key is a combination of song name and unix date
     [key: string]: {
         audio: Uint8Array,
@@ -69,7 +75,7 @@ async function get_all_songs(): Promise<Song[]> {
     return Object.values(songs);
 }
 
-const CORS_HEADERS = {
+export const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET",
     "Access-Control-Allow-Headers": "Content-Type"
@@ -179,296 +185,17 @@ Bun.serve({
             }
         }
 
-        if (url.pathname.startsWith("/song/")) {
-            const song = url.pathname.split("/").pop();
-            if (!song) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
+        const metadata_res = await metadata_routes(url, day_data);
+        if (metadata_res !== undefined) return metadata_res;
 
-            const name = decodeURIComponent(song);
-            if (day_data.songs.find(s => s.name === name) === undefined) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
+        const clue_res = await clue_routes(url, date, day_data);
+        if (clue_res !== undefined) return clue_res;
 
-            const song_data = songs[name];
-            if (!song_data) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
+        const stat_res = await stat_routes(url);
+        if (stat_res !== undefined) return stat_res;
 
-            return new Response(JSON.stringify(song_data), {
-                headers: {
-                    "Content-Type": "application/json",
-                    ...CORS_HEADERS
-                }
-            });
-        }
-        if (url.pathname.startsWith("/cover/")) {
-            const cover_name = url.pathname.split("/").pop();
-            if (!cover_name) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-
-            const name = decodeURIComponent(cover_name);
-            const cover = covers[name];
-            if (!cover) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-
-            return new Response(cover, {
-                headers: {
-                    "Content-Type": "image/webp",
-                    ...CORS_HEADERS
-                }
-            });
-        }
-
-        // the first clue is gonna be a 0.5 second clip randomly from the song
-        if (url.pathname.startsWith("/clue/1")) {
-            const song = url.pathname.split("/").pop();
-            if (!song) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-            if (cache[song + date.getTime()]) {
-                return new Response(cache[song + date.getTime()].audio, {
-                    headers: {
-                        "Content-Type": "audio/mpeg",
-                        ...CORS_HEADERS
-                    }
-                });
-            }
-
-            const name = decodeURIComponent(song);
-            if (day_data.songs.find(s => s.name === name) === undefined) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-
-            const start = day_data.songs.find(s => s.name === name)?.clue_1_start!; // this should always be defined
-            const end = start + 0.5;
-
-            const clip = await get_song_bite(`${name}.mp3`, start, end);
-
-            cache[song + 1 + date.getTime()] = {
-                audio: clip,
-                cached_at: Date.now()
-            };
-
-            return new Response(clip, {
-                headers: {
-                    "Content-Type": "audio/mpeg",
-                    ...CORS_HEADERS
-                }
-            });
-        }
-        // the second clue is gonna be a 1 second clip randomly from the song
-        else if (url.pathname.startsWith("/clue/2")) {
-            const song = url.pathname.split("/").pop();
-            if (!song) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-
-            if (cache[song + date.getTime()]) {
-                return new Response(cache[song + date.getTime()].audio, {
-                    headers: {
-                        "Content-Type": "audio/mpeg",
-                        ...CORS_HEADERS
-                    }
-                });
-            }
-
-            const name = decodeURIComponent(song);
-            if (day_data.songs.find(s => s.name === name) === undefined) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-
-            const start = day_data.songs.find(s => s.name === name)?.clue_2_start!; // this should always be defined
-            const end = start + 1;
-
-            const clip = await get_song_bite(`${name}.mp3`, start, end);
-
-            cache[song + 2 + date.getTime()] = {
-                audio: clip,
-                cached_at: Date.now()
-            };
-
-            return new Response(clip, {
-                headers: {
-                    "Content-Type": "audio/mpeg",
-                    ...CORS_HEADERS
-                }
-            });
-        }
-        // the third clue is gonna be a 2.5 second clip from the start of the song
-        else if (url.pathname.startsWith("/clue/3")) {
-            const song = url.pathname.split("/").pop();
-            if (!song) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-
-            if (cache[song + date.getTime()]) {
-                return new Response(cache[song + date.getTime()].audio, {
-                    headers: {
-                        "Content-Type": "audio/mpeg",
-                        ...CORS_HEADERS
-                    }
-                });
-            }
-
-            const name = decodeURIComponent(song);
-            if (day_data.songs.find(s => s.name === name) === undefined) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-
-            const start = 0;
-            const end = start + 2.5;
-
-            const clip = await get_song_bite(`${name}.mp3`, start, end);
-
-            cache[song + 3 + date.getTime()] = {
-                audio: clip,
-                cached_at: Date.now()
-            };
-
-            return new Response(clip, {
-                headers: {
-                    "Content-Type": "audio/mpeg",
-                    ...CORS_HEADERS
-                }
-            });
-        }
-
-        if (url.pathname === "/stats/home") {
-            home_view();
-            return new Response(null, {
-                headers: {
-                    ...CORS_HEADERS
-                }
-            });
-        }
-        else if (url.pathname === "/stats/finished") {
-            day_finished();
-            return new Response(null, {
-                headers: {
-                    ...CORS_HEADERS
-                }
-            });
-        }
-        else if (url.pathname.startsWith("/stats/clue")) {
-            let [song, clue] = [url.searchParams.get("song"), url.searchParams.get("clue")];
-            if (!song || !clue) {
-                return new Response("Not found", {
-                    status: 404
-                });
-            }
-
-            [song, clue] = [decodeURIComponent(song), decodeURIComponent(clue)];
-
-            clue_finished(song, clue);
-
-            return new Response(null, {
-                headers: {
-                    ...CORS_HEADERS
-                }
-            });
-        }
-
-        if (url.pathname.startsWith("/dashboard")) {
-            if (config.private_key !== decodeURIComponent(url.searchParams.get("key") || "")) {
-                return new Response("Unauthorized", {
-                    status: 401
-                });
-            }
-
-            if (url.pathname === "/dashboard") {
-                return new Response(null, {
-                    status: 200,
-                    headers: {
-                        ...CORS_HEADERS
-                    }
-                });
-            }
-
-            if (url.pathname === "/dashboard/total") {
-                const total_home_views = get_total_stat(StatKey.homepage_view);
-                const total_days_finished = get_total_stat(StatKey.day_finished);
-
-                return new Response(JSON.stringify({
-                    total_home_views,
-                    total_days_finished
-                }), {
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...CORS_HEADERS
-                    }
-                });
-            }
-
-            let [start_str, end_str] = [url.searchParams.get("start"), url.searchParams.get("end")];
-            if (!start_str || !end_str) {
-                return new Response("Bad request", {
-                    status: 400
-                });
-            }
-            const [start, end] = [parseInt(start_str), parseInt(end_str)];
-
-            if (url.pathname === "/dashboard/within") {
-                const home_views = get_stat_within_date(StatKey.homepage_view, [start, end]);
-                const day_finished = get_stat_within_date(StatKey.day_finished, [start, end]);
-
-                return new Response(JSON.stringify({
-                    home_views,
-                    day_finished
-                }), {
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...CORS_HEADERS
-                    }
-                });
-            }
-            else if (url.pathname === "/dashboard/clue") {
-                const [song_raw, clue_raw] = [url.searchParams.get("song"), url.searchParams.get("clue")];
-                if (!song_raw || !clue_raw) {
-                    return new Response("Bad request", {
-                        status: 400
-                    });
-                }
-                const [song, clue] = [decodeURIComponent(song_raw), decodeURIComponent(clue_raw)];
-
-                const song_clue = get_clue_stat(song, clue, [start, end]);
-
-                return new Response(JSON.stringify({
-                    song,
-                    clue,
-                    count: song_clue
-                }), {
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...CORS_HEADERS
-                    }
-                });
-            }
-        }
+        const dashboard_res = await dashboard_routes(url);
+        if (dashboard_res !== undefined) return dashboard_res;
 
         return new Response("Not found", {
             status: 404

@@ -46,11 +46,23 @@ export type Song = {
     names: string[], // the first name is the name to be displayed
 };
 
-
+/**
+ * Formats a date to a string  
+ * YYYY-MM-DD
+ * 
+ * @param date The date to format
+ * @returns The formatted date
+ */
 export function format_date(date: Date): string {
     return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 }
 
+/**
+ * Get the days between the start and today
+ * 
+ * @param start The start date
+ * @returns The days between the start and today
+ */
 export function get_days(start: Start): {
     format: string;
     unix: number;

@@ -29,6 +29,15 @@ export function sfc32(a: number, b: number, c: number, d: number): number {
     return (t >>> 0) / 4294967296;
 }
 
+/**
+ * Get a random song start from a unix timestamp
+ * 
+ * @param date The unix timestamp
+ * @param song The song name
+ * @param duration The song duration
+ * @param index The index of the song
+ * @returns A random song start
+ */
 export function get_random_song_start_from_unix(date: number, song: string, duration: number, index: number): number {
     let seed = sfc32(...cyrb128(date.toString() + song + index));
     return Math.floor(seed * duration);

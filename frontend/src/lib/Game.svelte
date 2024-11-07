@@ -397,3 +397,14 @@
 {/if}
 
 <Help bind:open={help_open} bind:volume={$volume} />
+
+<!--
+    @component
+
+    The main component for a game instance.  
+    This handles all game logic, state and view states.  
+
+    @param data - start data, which 5 random songs
+    @param date - what date to play
+    @param archived - if the game is archived
+-->
