@@ -34,10 +34,12 @@ bun run index.ts
 **`config/config.json`**
 ```json
 {
-    "starting_date": "2024-11-01", // The date the game starts counting from
-    "private_key": "**********", // Private key for the dashboard login
+    "starting_date": "2024-11-01",
+    "private_key": "**********",
 }
 ```
+The `starting_date` is the date the server will start counting from.  
+The `private_key` is used for logging into the dashboard.  
 
 **`config/song_metadata.json`**
 ```json
