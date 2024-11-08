@@ -8,7 +8,8 @@ export type HistoryData = {
         clue_1_start: number;
         clue_2_start: number;
         // clue 3 is always from 0
-    }[]
+        random?: number
+    }[],
 };
 
 /**
@@ -52,23 +53,27 @@ export function get_data(unix: number): HistoryData | undefined {
  * @returns The data for that day
  */
 export function generate_data(unix: number): HistoryData {
-    let seed = sfc32(...cyrb128(unix.toString()));
     let songs = Object.keys(song_durations);
     let data: HistoryData = {
         songs: []
     };
     for (let i = 0; i < 5; i++) {
+        // generate a new very random seed
+        const random = Math.random();
+        const seed = sfc32(...cyrb128((unix + random).toString()));
+
         let song_idx = Math.floor(seed * songs.length);
         let song = songs[song_idx];
-        songs.splice(song_idx, 1);
+        songs.splice(song_idx, 1); // remove the song from the list, so it doesn't get picked again
 
-        let clue_1_start = get_random_song_start_from_unix(unix, song, song_durations[song], 1);
-        let clue_2_start = get_random_song_start_from_unix(unix, song, song_durations[song], 2);
+        let clue_1_start = get_random_song_start_from_unix(unix + random, song, song_durations[song], 1);
+        let clue_2_start = get_random_song_start_from_unix(unix + random, song, song_durations[song], 2);
 
         data.songs.push({
             name: song,
             clue_1_start,
-            clue_2_start
+            clue_2_start,
+            random: random
         });
     }
 
