@@ -21,7 +21,10 @@
     function get_clue_hint(clue: Clue, song: string, clue_idx: number) {
         const song_data = game.songs[song];
 
-        if (song_data.correct_clue === clue_idx + 1)
+        if (
+            song_data.correct_clue === clue_idx + 1 ||
+            song_data[clue_idx].guess !== ""
+        )
             return `you guessed '${clue.guess}'`;
         if (song_data[clue_idx].used) return "skipped";
         else return "";

@@ -183,7 +183,7 @@
         if (!a) return " ";
 
         if (a.correct) return "x";
-        if (a[3].used) return "/";
+        if (a[3]?.used) return "/";
         if (song === data.random_songs[$current_song]) return "o";
         return " ";
     }
