@@ -66,8 +66,8 @@ export function generate_data(unix: number): HistoryData {
         let song = songs[song_idx];
         songs.splice(song_idx, 1); // remove the song from the list, so it doesn't get picked again
 
-        let clue_1_start = get_random_song_start_from_unix(unix + random, song, song_durations[song], 1);
-        let clue_2_start = get_random_song_start_from_unix(unix + random, song, song_durations[song], 2);
+        let clue_1_start = get_random_song_start_from_unix(unix + random, song, song_durations[song] - 0.5, 1);
+        let clue_2_start = get_random_song_start_from_unix(unix + random, song, song_durations[song] - 1.0, 2);
 
         data.songs.push({
             name: song,
