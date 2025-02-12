@@ -183,6 +183,14 @@ Bun.serve({
                     }
                 });
             }
+            case "/metadata": {
+                return new Response(JSON.stringify(songs), {
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...CORS_HEADERS
+                    }
+                });
+            }
         }
 
         const metadata_res = await metadata_routes(url, day_data);
